@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thai Easy - 泰語學習與翻譯工具 (v3.1 修正版)</title>
+  <style>
+    :root {
+      --bg-color: #121218;
+      --card-bg: #1e1e2d;
+      --card-inner: #262638;
+      --accent-pink: #ff2e93;
+      --accent-pink-hover: #ff54a8;
+      --pink-glow: rgba(255, 46, 147, 0.3);
+      --text-main: #f0f0f8;
+      --text-muted: #a0a0b8;
+      --border-color: #32324a;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+
+    /* Container & Layout */
+    .app-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 15px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding: 10px 0;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      color: var(--accent-pink);
+      text-shadow: 0 0 10px var(--pink-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 5px;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: var(--card-bg);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-pink);
+      color: #fff;
+      box-shadow: 0 2px 10px var(--pink-glow);
+    }
+
+    /* Tab Content Cards */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      color: var(--accent-pink);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Text Input & Buttons */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 15px;
+      color: var(--text-main);
+      font-size: 1.1rem;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 8px var(--pink-glow);
+    }
+
+    .btn {
+      background: var(--accent-pink);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: var(--accent-pink-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: var(--card-inner);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: #303046;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      border-radius: 6px;
+    }
+
+    /* Translation Result */
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: var(--card-inner);
+      border-radius: 12px;
+      border-left: 4px solid var(--accent-pink);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .thai-text-large {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--accent-pink);
+    }
+
+    .rtgs-text {
+      font-size: 1.1rem;
+      color: #4cd137;
+      margin-bottom: 5px;
+      font-style: italic;
+    }
+
+    .translation-text {
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+
+    /* Sentence Word Breakdown */
+    .breakdown-section {
+      margin-top: 25px;
+    }
+
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .word-card {
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .word-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-pink);
+    }
+
+    .word-thai {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .word-rtgs {
+      color: #4cd137;
+      font-size: 0.95rem;
+      margin: 2px 0;
+    }
+
+    .word-meaning {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .tone-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+      border-radius: 4px;
+      font-weight: bold;
+      align-self: flex-start;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    .tone-mid { background: #2e86de; color: #fff; }
+    .tone-low { background: #10ac84; color: #fff; }
+    .tone-falling { background: #ff9f43; color: #fff; }
+    .tone-high { background: #ee5253; color: #fff; }
+    .tone-rising { background: #00d2d3; color: #fff; }
+
+    /* Alphabet Table & Tone Matrix */
+    .alphabet-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .grid-44 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .char-card {
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .char-card:hover {
+      border-color: var(--accent-pink);
+      background: #2d2d42;
+    }
+
+    .char-thai {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: var(--accent-pink);
+    }
+
+    .char-name {
+      font-size: 0.8rem;
+      color: var(--text-main);
+    }
+
+    .char-class {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Tone Matrix Matrix Styling */
+    .tone-calculator {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .calc-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .calc-label {
+      min-width: 100px;
+      font-weight: bold;
+      color: var(--accent-pink);
+    }
+
+    .calc-select {
+      background: var(--card-inner);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .calc-result {
+      padding: 15px;
+      background: var(--card-inner);
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      border: 1px dashed var(--accent-pink);
+      margin-top: 10px;
+    }
+
+    /* Saved Vocab List */
+    .vocab-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .vocab-item {
+      background: var(--card-inner);
+      padding: 12px 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Audio Speaker Icon */
+    .speaker-btn {
+      background: none;
+      border: none;
+      color: var(--accent-pink);
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 4px;
+      transition: transform 0.1s;
+    }
+
+    .speaker-btn:hover {
+      transform: scale(1.2);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-pink);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .breakdown-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+      header h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1><span>🇹🇭</span> Thai Easy (v3.1 修正版)</h1>
+      <p>即時泰英中翻譯 • 詞語拆解 • 皇家拼音 (RTGS) • 語音發聲 • 聲調指南</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('translator')">🔍 翻譯與句子拆分</button>
+      <button class="tab-btn" onclick="switchTab('alphabet')">🔤 泰文字母表</button>
+      <button class="tab-btn" onclick="switchTab('tones')">🎯 聲調計算器</button>
+      <button class="tab-btn" onclick="switchTab('vocab')">⭐ 生字簿</button>
+    </div>
+
+    <!-- Tab 1: Translator & Sentence Breakdown -->
+    <div id="translator" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span>輸入中文、英文或泰文</span>
+          <button class="btn btn-secondary btn-sm" onclick="clearInput()">清空</button>
+        </div>
+        <div class="input-group">
+          <textarea id="inputText" placeholder="請在此輸入要翻譯或拆解的文字... (例如: สวัสดีครับ, ขอบคุณมาก, 浴室在哪裡, Thank you very much)"></textarea>
+          <button class="btn" id="translateBtn" onclick="handleTranslate()">
+            <span id="btnText">開始翻譯與拆解</span>
+            <span id="btnSpinner" class="spinner" style="display: none;"></span>
+          </button>
+        </div>
+
+        <!-- Single Sentence Output Block -->
+        <div id="resultBlock" style="display: none;">
+          <div class="result-box">
+            <div class="result-header">
+              <span class="thai-text-large" id="resThai"></span>
+              <div>
+                <button class="speaker-btn" title="播放語音" onclick="speakText(document.getElementById('resThai').innerText)">🔊</button>
+                <button class="btn btn-secondary btn-sm" onclick="saveCurrentVocab()">⭐ 收藏</button>
+              </div>
+            </div>
+            <div class="rtgs-text" id="resRtgs"></div>
+            <div class="translation-text" id="resTrans"></div>
+          </div>
+
+          <!-- Word-by-Word Breakdown Section -->
+          <div class="breakdown-section">
+            <div class="card-title">📌 詞語拆解 (Word-by-Word Breakdown)</div>
+            <div class="breakdown-grid" id="breakdownGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Alphabet Reference -->
+    <div id="alphabet" class="tab-content">
+      <div class="card">
+        <div class="card-title">44個泰文輔音字母表 (Thai Consonants)</div>
+        <div class="alphabet-tabs">
+          <button class="btn btn-secondary btn-sm" onclick="filterConsonants('all')">全部</button>
+          <button class="btn btn-secondary btn-sm" onclick="filterConsonants('high')">高輔音</button>
+          <button class="btn btn-secondary btn-sm" onclick="filterConsonants('mid')">中輔音</button>
+          <button class="btn btn-secondary btn-sm" onclick="filterConsonants('low')">低輔音</button>
+        </div>
+        <div class="grid-44" id="consonantGrid"></div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Tone Calculator Matrix -->
+    <div id="tones" class="tab-content">
+      <div class="card">
+        <div class="card-title">🎯 泰語聲調發音計算矩陣 (Tone Matrix Calculator)</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
+          選擇輔音類別、尾音/音節類型以及聲調符號，即時推算準確聲調：
+        </p>
+        <div class="tone-calculator">
+          <div class="calc-row">
+            <span class="calc-label">1. 輔音類別:</span>
+            <select id="calcClass" class="calc-select" onchange="calculateTone()">
+              <option value="mid">中輔音 (Mid Consonant - ก, จ, ด, ต...)</option>
+              <option value="high">高輔音 (High Consonant - ข, ฉ, ถ, ผ...)</option>
+              <option value="low">低輔音 (Low Consonant - ค, ช, ท, น...)</option>
+            </select>
+          </div>
+          <div class="calc-row">
+            <span class="calc-label">2. 音節類型:</span>
+            <select id="calcSyllable" class="calc-select" onchange="calculateTone()">
+              <option value="live">活音節 (Live - 長母音或 m, n, ng 結尾)</option>
+              <option value="dead_short">死音節 - 短母音 (Dead Short - k, p, t 結尾)</option>
+              <option value="dead_long">死音節 - 長母音 (Dead Long - k, p, t 結尾)</option>
+            </select>
+          </div>
+          <div class="calc-row">
+            <span class="calc-label">3. 聲調符號:</span>
+            <select id="calcMark" class="calc-select" onchange="calculateTone()">
+              <option value="none">無符號 (No Mark)</option>
+              <option value="mai_ek">邁埃 Mai Ek ( ่ )</option>
+              <option value="mai_tho">邁托 Mai Tho ( ้ )</option>
+              <option value="mai_tri">邁特 Mai Tri ( ๊ )</option>
+              <option value="mai_chattawa">邁查打瓦 Mai Chattawa ( ๋ )</option>
+            </select>
+          </div>
+
+          <div class="calc-result" id="calcOutput">
+            聲調結果: <span style="color: #2e86de;">中調 (Mid Tone - 0 / 常調)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Saved Vocab -->
+    <div id="vocab" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>⭐ 我的生字簿 (Saved Vocabulary)</span>
+          <button class="btn btn-secondary btn-sm" onclick="clearAllSaved()">清空所有</button>
+        </div>
+        <div class="vocab-list" id="vocabList">
+          <p style="color: var(--text-muted);">尚未收藏任何詞語。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">已儲存至生字簿</div>
+
+  <script>
+    /* ----------------------------------------------------
+       1. EXTENDED LOCAL THAI DICTIONARY (RTGS PHONETICS)
+    ---------------------------------------------------- */
+    const THAI_DICT = [
+      { thai: 'สวัสดี', rtgs: 'sawatdi', meaning: '你好', en: 'hello', tone: 'mid' },
+      { thai: 'สวัสดีครับ', rtgs: 'sawatdi khrap', meaning: '你好 (男性用語)', en: 'hello (male)', tone: 'mid' },
+      { thai: 'สวัสดีค่ะ', rtgs: 'sawatdi kha', meaning: '你好 (女性用語)', en: 'hello (female)', tone: 'falling' },
+      { thai: 'ขอบคุณ', rtgs: 'khop khun', meaning: '謝謝', en: 'thank you', tone: 'falling' },
+      { thai: 'ขอบคุณมาก', rtgs: 'khop khun mak', meaning: '非常感謝', en: 'thank you very much', tone: 'falling' },
+      { thai: 'ขอโทษ', rtgs: 'kho thot', meaning: '對不起 / 打擾一下', en: 'sorry / excuse me', tone: 'falling' },
+      { thai: 'ใช่', rtgs: 'chai', meaning: '是 / 對', en: 'yes', tone: 'falling' },
+      { thai: 'ไม่ใช่', rtgs: 'mai chai', meaning: '不是', en: 'no / not', tone: 'falling' },
+      { thai: 'ห้องน้ำ', rtgs: 'hong nam', meaning: '洗手間 / 浴室', en: 'restroom / bathroom', tone: 'falling' },
+      { thai: 'อยู่ที่ไหน', rtgs: 'yu thi nai', meaning: '在哪裡', en: 'where is it', tone: 'low' },
+      { thai: 'ห้องน้ำอยู่ที่ไหน', rtgs: 'hong nam yu thi nai', meaning: '洗手間在哪裡？', en: 'where is the restroom?', tone: 'falling' },
+      { thai: 'เท่าไหร่', rtgs: 'thao rai', meaning: '多少錢', en: 'how much', tone: 'falling' },
+      { thai: 'อันนี้เท่าไหร่', rtgs: 'an ni thao rai', meaning: '這個多少錢？', en: 'how much is this?', tone: 'falling' },
+      { thai: 'แพง', rtgs: 'phaeng', meaning: '貴', en: 'expensive', tone: 'mid' },
+      { thai: 'แพงไป', rtgs: 'phaeng pai', meaning: '太貴了', en: 'too expensive', tone: 'mid' },
+      { thai: 'ลดได้ไหม', rtgs: 'lot dai mai', meaning: '可以便宜一點嗎？', en: 'can you discount?', tone: 'high' },
+      { thai: 'อร่อย', rtgs: 'aroi', meaning: '好吃', en: 'delicious', tone: 'low' },
+      { thai: 'อร่อยมาก', rtgs: 'aroi mak', meaning: '非常好吃', en: 'very delicious', tone: 'low' },
+      { thai: 'เผ็ด', rtgs: 'phet', meaning: '辣', en: 'spicy', tone: 'low' },
+      { thai: 'ไม่เผ็ด', rtgs: 'mai phet', meaning: '不辣', en: 'not spicy', tone: 'falling' },
+      { thai: 'น้ำ', rtgs: 'nam', meaning: '水', en: 'water', tone: 'high' },
+      { thai: 'น้ำเปล่า', rtgs: 'nam plao', meaning: '純淨水', en: 'plain water', tone: 'high' },
+      { thai: 'กาแฟ', rtgs: 'kafae', meaning: '咖啡', en: 'coffee', tone: 'mid' },
+      { thai: 'ชา', rtgs: 'cha', meaning: '茶', en: 'tea', tone: 'mid' },
+      { thai: 'ชานม', rtgs: 'cha nom', meaning: '奶茶', en: 'milk tea', tone: 'mid' },
+      { thai: 'ร้านอาหาร', rtgs: 'ran ahan', meaning: '餐廳', en: 'restaurant', tone: 'high' },
+      { thai: 'โรงแรม', rtgs: 'rong raem', meaning: '酒店 / 旅館', en: 'hotel', tone: 'mid' },
+      { thai: 'สนามบิน', rtgs: 'sanam bin', meaning: '機場', en: 'airport', tone: 'rising' },
+      { thai: 'แท็กซี่', rtgs: 'thaeksi', meaning: '的士 / 出租車', en: 'taxi', tone: 'high' },
+      { thai: 'ช่วยด้วย', rtgs: 'chuai duai', meaning: '救命 / 請幫忙', en: 'help!', tone: 'falling' },
+      { thai: 'คิดถึง', rtgs: 'khit thueng', meaning: '想念', en: 'miss / think of', tone: 'high' },
+      { thai: 'รัก', rtgs: 'rak', meaning: '愛', en: 'love', tone: 'high' },
+      { thai: 'ฉัน', rtgs: 'chan', meaning: '我 (女性或通稱)', en: 'I / me', tone: 'rising' },
+      { thai: 'ผม', rtgs: 'phom', meaning: '我 (男性用)', en: 'I / me (male)', tone: 'rising' },
+      { thai: 'คุณ', rtgs: 'khun', meaning: '你 / 您', en: 'you', tone: 'mid' },
+      { thai: 'เขา', rtgs: 'khao', meaning: '他 / 她', en: 'he / she', tone: 'rising' },
+      { thai: 'พวกเรา', rtgs: 'phuag rao', meaning: '我們', en: 'we / us', tone: 'falling' },
+      { thai: 'กิน', rtgs: 'kin', meaning: '吃', en: 'eat', tone: 'mid' },
+      { thai: 'ดื่ม', rtgs: 'duem', meaning: '喝', en: 'drink', tone: 'low' },
+      { thai: 'ไป', rtgs: 'pai', meaning: '去', en: 'go', tone: 'mid' },
+      { thai: 'มา', rtgs: 'ma', meaning: '來', en: 'come', tone: 'mid' },
+      { thai: 'ชอบ', rtgs: 'chop', meaning: '喜歡', en: 'like', tone: 'falling' },
+      { thai: 'ไม่', rtgs: 'mai', meaning: '不 / 沒有', en: 'not / no', tone: 'falling' },
+      { thai: 'มาก', rtgs: 'mak', meaning: '非常 / 很', en: 'very / much', tone: 'falling' },
+      { thai: 'สวย', rtgs: 'suai', meaning: '美麗', en: 'beautiful', tone: 'rising' },
+      { thai: 'หล่อ', rtgs: 'lo', meaning: '英俊 / 帥', en: 'handsome', tone: 'low' }
+    ];
+
+    /* ----------------------------------------------------
+       2. CONSONANT DATABASE FOR ALPHABET TAB
+    ---------------------------------------------------- */
+    const CONSONANTS = [
+      { thai: 'ก', name: 'Ko Kai (雞)', class: 'mid', rtgs: 'k' },
+      { thai: 'ข', name: 'Kho Khai (蛋)', class: 'high', rtgs: 'kh' },
+      { thai: 'ค', name: 'Kho Khwai (水牛)', class: 'low', rtgs: 'kh' },
+      { thai: 'ง', name: 'Ngo Ngu (蛇)', class: 'low', rtgs: 'ng' },
+      { thai: 'จ', name: 'Cho Chan (盤子)', class: 'mid', rtgs: 'ch' },
+      { thai: 'ฉ', name: 'Cho Ching (響鈸)', class: 'high', rtgs: 'ch' },
+      { thai: 'ช', name: 'Cho Chang (大象)', class: 'low', rtgs: 'ch' },
+      { thai: 'ซ', name: 'So So (鐵鏈)', class: 'low', rtgs: 's' },
+      { thai: 'ด', name: 'Do Dek (小孩)', class: 'mid', rtgs: 'd' },
+      { thai: 'ต', name: 'To Tao (烏龜)', class: 'mid', rtgs: 't' },
+      { thai: 'ถ', name: 'Tho Thung (袋子)', class: 'high', rtgs: 'th' },
+      { thai: 'ท', name: 'Tho Thahan (軍人)', class: 'low', rtgs: 'th' },
+      { thai: 'น', name: 'No Nu (老鼠)', class: 'low', rtgs: 'n' },
+      { thai: 'บ', name: 'Bo Baimai (樹葉)', class: 'mid', rtgs: 'b' },
+      { thai: 'ป', name: 'Po Pla (魚)', class: 'mid', rtgs: 'p' },
+      { thai: 'ผ', name: 'Pho Phueng (蜜蜂)', class: 'high', rtgs: 'ph' },
+      { thai: 'ฝ', name: 'Fo Fa (蓋子)', class: 'high', rtgs: 'f' },
+      { thai: 'พ', name: 'Pho Phan (高腳盤)', class: 'low', rtgs: 'ph' },
+      { thai: 'ฟ', name: 'Fo Fan (牙齒)', class: 'low', rtgs: 'f' },
+      { thai: 'ม', name: 'Mo Ma (馬)', class: 'low', rtgs: 'm' },
+      { thai: 'ย', name: 'Yo Yak (夜叉巨人)', class: 'low', rtgs: 'y' },
+      { thai: 'ร', name: 'Ro Ruea (船)', class: 'low', rtgs: 'r' },
+      { thai: 'ล', name: 'Lo Ling (猴子)', class: 'low', rtgs: 'l' },
+      { thai: 'ว', name: 'Wo Waen (戒指)', class: 'low', rtgs: 'w' },
+      { thai: 'ส', name: 'So Suea (老虎)', class: 'high', rtgs: 's' },
+      { thai: 'ห', name: 'Ho Hip (箱子)', class: 'high', rtgs: 'h' },
+      { thai: 'อ', name: 'O Ang (盆子)', class: 'mid', rtgs: 'o' },
+      { thai: 'ฮ', name: 'Ho Nok-huk (貓頭鷹)', class: 'low', rtgs: 'h' }
+    ];
+
+    /* ----------------------------------------------------
+       3. TAB SWITCHING LOGIC
+    ---------------------------------------------------- */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+
+      if (tabId === 'alphabet') renderConsonants('all');
+      if (tabId === 'vocab') renderVocabList();
+    }
+
+    /* ----------------------------------------------------
+       4. SPEECH SYNTHESIS (TTS)
+    ---------------------------------------------------- */
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) {
+        showToast("瀏覽器不支援語音播放功能");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'th-TH';
+      utterance.rate = 0.85;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    /* ----------------------------------------------------
+       5. TRANSLATION & TOKENIZER ENGINE (GREEDY LONGEST-MATCH)
+    ---------------------------------------------------- */
+    async function handleTranslate() {
+      const input = document.getElementById('inputText').value.trim();
+      if (!input) return;
+
+      const btnSpinner = document.getElementById('btnSpinner');
+      const btnText = document.getElementById('btnText');
+      btnSpinner.style.display = 'inline-block';
+      btnText.innerText = '翻譯中...';
+
+      let isThaiInput = /[\u0E00-\u0E7F]/.test(input);
+      let thaiText = input;
+      let translatedText = "";
+
+      try {
+        if (!isThaiInput) {
+          // Check local dict exact match first
+          let localMatch = THAI_DICT.find(item => item.meaning === input || item.en.toLowerCase() === input.toLowerCase());
+          if (localMatch) {
+            thaiText = localMatch.thai;
+            translatedText = input;
+          } else {
+            // Online API fallback
+            let res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=zh|th`);
+            let data = await res.json();
+            if (data && data.responseData && data.responseData.translatedText) {
+              thaiText = data.responseData.translatedText;
+              translatedText = input;
+            }
+          }
+        } else {
+          // Input is already Thai, translate to Traditional Chinese
+          let res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=th|zh-TW`);
+          let data = await res.json();
+          if (data && data.responseData && data.responseData.translatedText) {
+            translatedText = data.responseData.translatedText;
+          }
+        }
+      } catch (err) {
+        console.warn("API translation failed, using fallback breakdown.", err);
+      }
+
+      // Display main translation block
+      document.getElementById('resultBlock').style.display = 'block';
+      document.getElementById('resThai').innerText = thaiText;
+      document.getElementById('resTrans').innerText = translatedText ? `翻譯: ${translatedText}` : '';
+
+      // Perform Greedy Sentence Breakdown (詞語拆解)
+      let breakdown = tokenizeSentence(thaiText);
+      
+      // Compute full RTGS
+      let fullRtgs = breakdown.map(item => item.rtgs).join(' ');
+      document.getElementById('resRtgs').innerText = `RTGS: [ ${fullRtgs} ]`;
+
+      // Render breakdown grid
+      renderBreakdown(breakdown);
+
+      btnSpinner.style.display = 'none';
+      btnText.innerText = '開始翻譯與拆解';
+    }
+
+    // Greedy Longest-Match Tokenizer
+    function tokenizeSentence(text) {
+      let tokens = [];
+      let idx = 0;
+
+      while (idx < text.length) {
+        let match = null;
+
+        // Try matching longest Thai dictionary entries first
+        for (let item of THAI_DICT) {
+          if (text.startsWith(item.thai, idx)) {
+            if (!match || item.thai.length > match.thai.length) {
+              match = item;
+            }
+          }
+        }
+
+        if (match) {
+          tokens.push(match);
+          idx += match.thai.length;
+        } else {
+          // If character is a space
+          if (text[idx] === ' ') {
+            idx++;
+            continue;
+          }
+          // Character fallback
+          let char = text[idx];
+          let cMatch = CONSONANTS.find(c => c.thai === char);
+          tokens.push({
+            thai: char,
+            rtgs: cMatch ? cMatch.rtgs : char,
+            meaning: cMatch ? cMatch.name : '字詞 / 符號',
+            en: 'character',
+            tone: 'mid'
+          });
+          idx++;
+        }
+      }
+      return tokens;
+    }
+
+    function renderBreakdown(tokens) {
+      const grid = document.getElementById('breakdownGrid');
+      grid.innerHTML = '';
+
+      tokens.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'word-card';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="word-thai">${item.thai}</span>
+            <button class="speaker-btn" onclick="speakText('${item.thai}')">🔊</button>
+          </div>
+          <div class="word-rtgs">${item.rtgs}</div>
+          <div class="word-meaning">${item.meaning} (${item.en})</div>
+          <span class="tone-badge tone-${item.tone}">${item.tone} tone</span>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ----------------------------------------------------
+       6. ALPHABET TAB FUNCTIONS
+    ---------------------------------------------------- */
+    function filterConsonants(cls) {
+      renderConsonants(cls);
+    }
+
+    function renderConsonants(filter) {
+      const grid = document.getElementById('consonantGrid');
+      grid.innerHTML = '';
+
+      CONSONANTS.forEach(c => {
+        if (filter !== 'all' && c.class !== filter) return;
+
+        const card = document.createElement('div');
+        card.className = 'char-card';
+        card.onclick = () => speakText(c.thai);
+        card.innerHTML = `
+          <div class="char-thai">${c.thai}</div>
+          <div class="char-name">${c.name}</div>
+          <div class="char-class">${c.class.toUpperCase()} CLASS (${c.rtgs})</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ----------------------------------------------------
+       7. TONE CALCULATOR MATRIX LOGIC
+    ---------------------------------------------------- */
+    function calculateTone() {
+      const cls = document.getElementById('calcClass').value;
+      const syllable = document.getElementById('calcSyllable').value;
+      const mark = document.getElementById('calcMark').value;
+
+      let resultText = "";
+      let colorClass = "#2e86de";
+
+      if (mark === 'mai_ek') {
+        if (cls === 'mid' || cls === 'high') { resultText = "低調 (Low Tone - 1)"; colorClass = "#10ac84"; }
+        else { resultText = "落調 / 降調 (Falling Tone - 2)"; colorClass = "#ff9f43"; }
+      } else if (mark === 'mai_tho') {
+        if (cls === 'mid' || cls === 'high') { resultText = "落調 / 降調 (Falling Tone - 2)"; colorClass = "#ff9f43"; }
+        else { resultText = "高調 (High Tone - 3)"; colorClass = "#ee5253"; }
+      } else if (mark === 'mai_tri') {
+        resultText = "高調 (High Tone - 3)"; colorClass = "#ee5253";
+      } else if (mark === 'mai_chattawa') {
+        resultText = "升調 (Rising Tone - 4)"; colorClass = "#00d2d3";
+      } else {
+        // No tone mark rules
+        if (syllable === 'live') {
+          if (cls === 'high') { resultText = "升調 (Rising Tone - 4)"; colorClass = "#00d2d3"; }
+          else { resultText = "中調 (Mid Tone - 0 / 常調)"; colorClass = "#2e86de"; }
+        } else if (syllable === 'dead_short') {
+          if (cls === 'low') { resultText = "高調 (High Tone - 3)"; colorClass = "#ee5253"; }
+          else { resultText = "低調 (Low Tone - 1)"; colorClass = "#10ac84"; }
+        } else if (syllable === 'dead_long') {
+          if (cls === 'low') { resultText = "落調 / 降調 (Falling Tone - 2)"; colorClass = "#ff9f43"; }
+          else { resultText = "低調 (Low Tone - 1)"; colorClass = "#10ac84"; }
+        }
+      }
+
+      document.getElementById('calcOutput').innerHTML = `聲調推算結果: <span style="color: ${colorClass};">${resultText}</span>`;
+    }
+
+    /* ----------------------------------------------------
+       8. SAVED VOCABULARY (LOCALSTORAGE)
+    ---------------------------------------------------- */
+    function saveCurrentVocab() {
+      const thai = document.getElementById('resThai').innerText;
+      const rtgs = document.getElementById('resRtgs').innerText;
+      const trans = document.getElementById('resTrans').innerText;
+
+      if (!thai) return;
+
+      let saved = JSON.parse(localStorage.getItem('thai_easy_vocab') || '[]');
+      if (saved.some(item => item.thai === thai)) {
+        showToast("已在生字簿中");
+        return;
+      }
+
+      saved.push({ thai, rtgs, trans });
+      localStorage.setItem('thai_easy_vocab', JSON.stringify(saved));
+      showToast("已成功加入生字簿！");
+    }
+
+    function renderVocabList() {
+      const container = document.getElementById('vocabList');
+      let saved = JSON.parse(localStorage.getItem('thai_easy_vocab') || '[]');
+
+      if (saved.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted);">尚未收藏任何詞語。</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      saved.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'vocab-item';
+        div.innerHTML = `
+          <div>
+            <div style="font-size: 1.2rem; font-weight: bold; color: var(--accent-pink);">${item.thai}</div>
+            <div style="font-size: 0.9rem; color: #4cd137;">${item.rtgs}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">${item.trans}</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="speaker-btn" onclick="speakText('${item.thai}')">🔊</button>
+            <button class="btn btn-secondary btn-sm" onclick="removeVocab(${index})">刪除</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function removeVocab(index) {
+      let saved = JSON.parse(localStorage.getItem('thai_easy_vocab') || '[]');
+      saved.splice(index, 1);
+      localStorage.setItem('thai_easy_vocab', JSON.stringify(saved));
+      renderVocabList();
+      showToast("已從生字簿移除");
+    }
+
+    function clearAllSaved() {
+      if (confirm("確定要清空所有收藏的生字嗎？")) {
+        localStorage.removeItem('thai_easy_vocab');
+        renderVocabList();
+        showToast("生字簿已清空");
+      }
+    }
+
+    /* ----------------------------------------------------
+       9. UTILITIES
+    ---------------------------------------------------- */
+    function clearInput() {
+      document.getElementById('inputText').value = '';
+      document.getElementById('resultBlock').style.display = 'none';
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+  </script>
+</body>
+</html>
